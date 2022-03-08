@@ -1,2 +1,2 @@
 ARG VARIANT="ubuntu-21.04"
-FROM thordev/devcontainers/cpp:${VARIANT}
+FROM thordrive/devcontainers/cpp:${VARIANT}
