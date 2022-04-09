@@ -48,8 +48,9 @@ jobs:
             }' | tee __data
 
             ${{ env.ACT && 'echo' }} curl \
-              -X POST \
-              -H "Accept: application/vnd.github.v3+json" \
+              --user :${{ github.token }}
+              --request POST \
+              --header "Accept: application/vnd.github.v3+json" \
+              --data-binary "@__data" \
               ${{ github.api_url }}/repos/${{ github.repository }}/actions/workflows/${{ github.workflow }}/dispatches \
-              --binary-data "@__data"
           done
