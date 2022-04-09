@@ -1,5 +1,4 @@
-FROM thordrive/dev-cpp:ubuntu-21.04
-
+FROM thordrive/dev-vtk:9.0.3-pv5.9.1
 
 RUN apt-get update && apt-get install -y --no-install-recommends \
 		bison \
@@ -18,14 +17,12 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
 		libxkbcommon-x11-dev \
 	&& rm -rf /var/lib/apt/lists/*
 
-RUN sudo -u thor ${VCPKG_ROOT}/vcpkg install \
-		qtbase \
+RUN sudo -u thor ${VCPKG_ROOT}/vcpkg --binarysource=clear install qtbase \
 	&& rm -rf ${VCPKG_ROOT}/buildtrees \
 	&& rm -rf ${VCPKG_ROOT}/packages \
 	&& rm -rf ${VCPKG_DOWNLOADS}/*
 
-RUN sudo -u thor ${VCPKG_ROOT}/vcpkg install \
-		qtquick3d \
+RUN sudo -u thor ${VCPKG_ROOT}/vcpkg --binarysource=clear install qtquick3d \
 	&& rm -rf ${VCPKG_ROOT}/buildtrees \
 	&& rm -rf ${VCPKG_ROOT}/packages \
 	&& rm -rf ${VCPKG_DOWNLOADS}/*

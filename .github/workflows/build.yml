@@ -1,0 +1,53 @@
+name: build
+
+on:
+  workflow_dispatch:
+    inputs:
+      reference:
+        required: true
+        description: |
+          Reference for the image to be built.
+          All dependent images will be built.
+
+jobs:
+  build:
+    runs-on: ubuntu-20.04
+    steps:
+      - uses: docker/login-action@v1
+        with:
+          username: ${{ secrets.DOCKERHUB_USERNAME }}
+          password: ${{ secrets.DOCKERHUB_TOKEN }}
+
+      - uses: actions/checkout@v3
+      - uses: actions/setup-go@v3
+        with:
+          go-version: 1.18
+
+      - name: Tree
+        run: go run ./cmd/tree ${{ github.event.inputs.reference }}
+
+      - name: Build
+        run: go run ./cmd/build ${{ env.ACT && '--dry-run' }} ${{ github.event.inputs.reference }}
+
+      - name: Push
+        run: |
+          docker push ${{ github.event.inputs.reference }}
+
+
+      - name: Trigger
+        run: |
+          for reference in $(go run ./cmd/tree --strip 1 --depth 1 --pack ${{ github.event.inputs.reference }}); do
+            echo trigger ${reference}
+            echo '{
+              "ref": "${{ github.action_ref }}",
+              "inputs": {
+                "reference": "'${reference}'"
+              }
+            }' | tee __data
+
+            ${{ env.ACT && 'echo' }} curl \
+              -X POST \
+              -H "Accept: application/vnd.github.v3+json" \
+              ${{ github.api_url }}/repos/${{ github.repository }}/actions/workflows/${{ github.workflow }}/dispatches \
+              --binary-data "@__data"
+          done

@@ -1,0 +1,8 @@
+name: thordrive/dev-gcc
+args:
+  "CMAKE_VERSION": "3.23.0"
+  "VCPKG_COMMIT": af2287382b1991dbdcb7e5112d236f3323b9dd7a
+  
+images:
+  - tags: ["11.2.0", "11.2", "11"]
+    from: "gcc:11.2.0"
