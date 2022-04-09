@@ -34,6 +34,10 @@ func (n *node) Walk(fn func(depth int, n *node) bool) {
 	n.walk(0, fn)
 }
 
+func (n *node) IsOrigin() bool {
+	return len(n.AliasOf) == 0
+}
+
 func (n *node) walk(depth int, fn func(depth int, n *node) bool) {
 	if !fn(depth, n) {
 		return
@@ -115,7 +119,7 @@ func main() {
 
 	if args.Pack {
 		for _, entry := range entries {
-			if len(entry.AliasOf) == 0 {
+			if entry.IsOrigin() {
 				continue
 			}
 
@@ -130,23 +134,32 @@ func main() {
 		}
 	}
 
-	if len(args.Root) > 0 {
+	rootEntries := make([]*node, 0)
+	if len(args.Root) == 0 {
 		for _, entry := range entries {
-			if entry.Ref != args.Root {
+			if entry.parent == nil {
+				rootEntries = append(rootEntries, entry)
+			}
+		}
+	} else {
+		origin_entry, ok := entries[args.Root]
+		if !ok {
+			log.Fatalln("reference does not exists:", args.Root)
+		}
+
+		if !origin_entry.IsOrigin() {
+			origin_entry, ok = entries[origin_entry.AliasOf]
+			if !ok {
+				panic("origin reference does not exists")
+			}
+		}
+
+		rootEntries = append(rootEntries, origin_entry)
+		for _, entry := range entries {
+			if entry.AliasOf != origin_entry.Ref {
 				continue
 			}
 
-			entry.Walk(walker)
-			return
-		}
-
-		log.Fatalln("reference does not exists:", args.Root)
-		return
-	}
-
-	rootEntries := make([]*node, 0)
-	for _, entry := range entries {
-		if entry.parent == nil {
 			rootEntries = append(rootEntries, entry)
 		}
 	}
