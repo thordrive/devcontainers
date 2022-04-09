@@ -3,7 +3,7 @@ ARG FROM
 FROM ${FROM:-gcc:${TAG}}
 
 RUN apt-get update \
-	&& apt-get install --no-install-recommends --yes \
+	&& apt-get install --yes --no-install-recommends \
 		apt-utils \
         openssh-client \
         gnupg2 \

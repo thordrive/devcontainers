@@ -1,11 +1,14 @@
-FROM thordrive/dev-cpp:ubuntu-21.04
+ARG TAG
+ARG FROM
+FROM ${FROM:-thordrive/dev-gcc:${TAG}}
 
-RUN apt-get update && apt-get install -y --no-install-recommends \
+RUN apt-get update \
+	&& apt-get install --yes --no-install-recommends \
 		libxmu-dev \
 		libxi-dev \
 		libgl-dev \
 		libgl1-mesa-dev \
-        && rm -rf /var/lib/apt/lists/*
+	&& rm -rf /var/lib/apt/lists/*
 
 RUN sudo -u thor ${VCPKG_ROOT}/vcpkg --binarysource=clear install vtk \
 	&& rm -rf ${VCPKG_ROOT}/buildtrees \
