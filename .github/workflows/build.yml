@@ -52,5 +52,5 @@ jobs:
               --request POST \
               --header "Accept: application/vnd.github.v3+json" \
               --data-binary "@__data" \
-              ${{ github.api_url }}/repos/${{ github.repository }}/actions/workflows/${{ github.workflow }}/dispatches \
+              ${{ github.api_url }}/repos/${{ github.repository }}/actions/workflows/${{ github.workflow }}/dispatches
           done
