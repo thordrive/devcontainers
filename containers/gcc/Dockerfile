@@ -103,7 +103,7 @@ ARG VCPKG_COMMIT
 ENV VCPKG_ROOT=/opt/vcpkg \
     VCPKG_DOWNLOADS=/opt/vcpkg-downloads
 RUN mkdir -p "${VCPKG_ROOT}" "${VCPKG_DOWNLOADS}" \
-	&& git clone --depth=1 https://github.com/microsoft/vcpkg "${VCPKG_ROOT}" \
+	&& git clone https://github.com/microsoft/vcpkg "${VCPKG_ROOT}" \
 	&& cd "${VCPKG_ROOT}" \
 	&& git checkout "${VCPKG_COMMIT}" \
 	&& ./bootstrap-vcpkg.sh -disableMetrics \
