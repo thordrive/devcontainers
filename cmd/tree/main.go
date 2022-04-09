@@ -104,12 +104,12 @@ func main() {
 	}
 
 	walker := func(level int, entry *node) bool {
-		if level < args.Strip {
-			return true
+		if args.Pack && !entry.IsOrigin() {
+			return false
 		}
 
-		if args.Pack && len(entry.AliasOf) > 0 {
-			return false
+		if level < args.Strip {
+			return true
 		}
 
 		fmt.Printf("%s%s\n", strings.Repeat("  ", level-args.Strip), entry.Ref)
@@ -163,7 +163,6 @@ func main() {
 			rootEntries = append(rootEntries, entry)
 		}
 	}
-
 	for _, entry := range rootEntries {
 		entry.Walk(walker)
 	}

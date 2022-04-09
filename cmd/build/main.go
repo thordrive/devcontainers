@@ -107,7 +107,10 @@ func main() {
 			args = append(args, "--tag", fmt.Sprintf("%s:%s", build_ctx.manifest.Name, tag))
 		}
 
-		build_args := build_ctx.manifest.Args
+		build_args := make(map[string]string)
+		for k, v := range build_ctx.manifest.Args {
+			build_args[k] = v
+		}
 		for k, v := range build_ctx.image.Args {
 			build_args[k] = v
 		}

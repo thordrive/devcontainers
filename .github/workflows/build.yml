@@ -41,13 +41,14 @@ jobs:
           for reference in $(go run ./cmd/tree --strip 1 --depth 1 --pack ${{ github.event.inputs.reference }}); do
             echo trigger ${reference}
             echo '{
-              "ref": "'${{ github.ref }}'",
+              "ref": "${{ github.ref }}",
               "inputs": {
                 "reference": "'${reference}'"
               }
             }' | tee __data
 
             ${{ env.ACT && 'echo' }} curl \
+              --silent \
               --user :${{ github.token }} \
               --request POST \
               --header "Accept: application/vnd.github.v3+json" \
