@@ -5,9 +5,7 @@ on:
     inputs:
       reference:
         required: true
-        description: |
-          Reference for the image to be built.
-          All dependent images will be built.
+        description: Reference to the image to build. It triggers the build of any images that depend on it
 
 jobs:
   build:
@@ -49,7 +47,7 @@ jobs:
 
             ${{ env.ACT && 'echo' }} curl \
               --silent \
-              --user :${{ github.token }} \
+              --user :${{ secrets.GITHUB_PAT }} \
               --request POST \
               --header "Accept: application/vnd.github.v3+json" \
               --data-binary "@__data" \
