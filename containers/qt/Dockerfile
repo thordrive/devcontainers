@@ -1,4 +1,6 @@
-FROM thordrive/dev-vtk:9.0.3-pv5.9.1
+ARG TAG
+ARG FROM
+FROM ${FROM:-thordrive/dev-vtk:${TAG}}
 
 RUN apt-get update && apt-get install -y --no-install-recommends \
 		bison \
