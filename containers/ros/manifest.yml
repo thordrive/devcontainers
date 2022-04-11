@@ -1,0 +1,5 @@
+name: thordrive/dev-ros
+  
+images:
+  - tags: ["kinetic"]
+    from: "library/ros:kinetic-perception"

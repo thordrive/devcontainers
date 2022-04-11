@@ -5,4 +5,4 @@ args:
   
 images:
   - tags: ["1.18.0", "1.18", "1"]
-    from: "golang:1.18.0-bullseye"
+    from: "library/golang:1.18.0-bullseye"

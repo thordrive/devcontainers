@@ -5,4 +5,4 @@ args:
   
 images:
   - tags: ["11.2.0", "11.2", "11"]
-    from: "gcc:11.2.0"
+    from: "library/gcc:11.2.0"

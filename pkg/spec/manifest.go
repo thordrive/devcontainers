@@ -58,7 +58,9 @@ func (m Manifest) RefsOf(image Image) []string {
 	return refs
 }
 
-func Walk(files []fs.FileInfo, fn func(manifest_path string, manifest *Manifest) bool) error {
+type Walker func(manifest_path string, manifest *Manifest) bool
+
+func Walk(files []fs.FileInfo, fn Walker) error {
 	for _, file := range files {
 		if !file.IsDir() {
 			continue
