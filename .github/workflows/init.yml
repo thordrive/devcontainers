@@ -1,0 +1,34 @@
+name: Initialize
+
+on:
+  schedule:
+    - cron: '0 0 * * *'
+
+jobs:
+  init:
+    runs-on: ubuntu-20.04
+    steps:
+      - uses: actions/checkout@v3
+      - uses: actions/setup-go@v3
+        with:
+          go-version: 1.18
+
+      - name: Trigger
+        run: |
+          for reference in $(go run ./cmd/outdated); do
+            echo trigger ${reference}
+            echo '{
+              "ref": "${{ github.ref }}",
+              "inputs": {
+                "reference": "'${reference}'"
+              }
+            }' | tee __data
+
+            ${{ env.ACT && 'echo' }} curl \
+              --silent \
+              --user :${{ secrets.WORKFLOW_PAT }} \
+              --request POST \
+              --header "Accept: application/vnd.github.v3+json" \
+              --data-binary "@__data" \
+              ${{ github.api_url }}/repos/${{ github.repository }}/actions/workflows/build.yml/dispatches
+          done
