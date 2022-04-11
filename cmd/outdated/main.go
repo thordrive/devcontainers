@@ -2,6 +2,7 @@ package main
 
 import (
 	"encoding/json"
+	"errors"
 	"flag"
 	"fmt"
 	"io/ioutil"
@@ -11,6 +12,10 @@ import (
 	"time"
 
 	"thordrive.ai/devcontainers/pkg/spec"
+)
+
+var (
+	ErrUnauthorized = errors.New("unauthorized")
 )
 
 type Auth struct {
@@ -108,7 +113,7 @@ func (c *RegistryClient) GetImageManifest(ref string) (*ImageManifest, error) {
 	}
 
 	if res.StatusCode == http.StatusUnauthorized {
-		return nil, fmt.Errorf("%s: %s", res.Status, string(body))
+		return nil, fmt.Errorf("%w: %s", ErrUnauthorized, string(body))
 	}
 
 	image_manifest := &ImageManifest{}
@@ -184,7 +189,11 @@ func main() {
 
 			child_entry_date, err := get_date(child_entry.Ref)
 			if err != nil {
-				log.Fatalf("failed to get date for %s: %s", child_entry.Ref, err)
+				if !errors.Is(err, ErrUnauthorized) {
+					log.Fatalf("failed to get date for %s: %s", child_entry.Ref, err)
+				}
+
+				child_entry_date = time.Time{}
 			}
 
 			if args.Verbose {
