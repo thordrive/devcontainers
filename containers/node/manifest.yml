@@ -1,5 +1,6 @@
 name: thordrive/dev-node
   
 images:
-  - tags: ["16.14", "16"]
-    from: "library/node:16.14-bullseye"
+  # node:16~99
+  - tags: ["{0}"]
+    from: 'library/node:/^(1[6-9]|[2-9][0-9])$/'

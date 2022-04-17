@@ -1,5 +1,5 @@
 name: thordrive/dev-qt
 
 images:
-  - tags: ["6.2.3"]
+  - tags: ["6.2"]
     from: "thordrive/dev-vtk:9"

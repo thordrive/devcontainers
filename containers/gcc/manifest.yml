@@ -4,5 +4,6 @@ args:
   "VCPKG_COMMIT": af2287382b1991dbdcb7e5112d236f3323b9dd7a
   
 images:
-  - tags: ["11.2.0", "11.2", "11"]
-    from: "library/gcc:11.2.0"
+  # gcc:11~99 
+  - tags: ["{0}.{1}", "{0}"]
+    from: 'library/gcc:/^(1[1-9]|[2-9][0-9]).(\d)$/'

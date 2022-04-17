@@ -58,7 +58,7 @@ func (m Manifest) RefsOf(image Image) []string {
 	return refs
 }
 
-type Walker func(manifest_path string, manifest *Manifest) bool
+type Walker func(manifest_path string, manifest *Manifest) error
 
 func Walk(files []fs.FileInfo, fn Walker) error {
 	for _, file := range files {
@@ -84,8 +84,8 @@ func Walk(files []fs.FileInfo, fn Walker) error {
 			return fmt.Errorf("failed to read manifest at %s: %w", manifest_path, err)
 		}
 
-		if !fn(manifest_path, &manifest) {
-			return nil
+		if err := fn(manifest_path, &manifest); err != nil {
+			return fmt.Errorf("failed to walk at %s: %w", manifest_path, err)
 		}
 	}
 

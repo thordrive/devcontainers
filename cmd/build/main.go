@@ -4,6 +4,7 @@ import (
 	"errors"
 	"flag"
 	"fmt"
+	"io"
 	"io/ioutil"
 	"log"
 	"os"
@@ -65,7 +66,7 @@ func main() {
 		path: "",
 	}
 
-	if err := spec.Walk(files, func(manifest_path string, manifest *spec.Manifest) bool {
+	if err := spec.Walk(files, func(manifest_path string, manifest *spec.Manifest) error {
 		for _, image := range manifest.Images {
 			for _, ref := range manifest.RefsOf(image) {
 				if args.Reference != ref {
@@ -78,13 +79,15 @@ func main() {
 					image:    image,
 				}
 
-				return false
+				return io.EOF
 			}
 		}
 
-		return true
+		return nil
 	}); err != nil {
-		log.Fatal(err)
+		if !errors.Is(err, io.EOF) {
+			log.Fatal(err)
+		}
 	}
 
 	if len(build_ctx.path) == 0 {

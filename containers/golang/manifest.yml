@@ -1,8 +1,6 @@
 name: thordrive/dev-golang
-args:
-  "CMAKE_VERSION": "3.23.0"
-  "VCPKG_COMMIT": af2287382b1991dbdcb7e5112d236f3323b9dd7a
   
 images:
-  - tags: ["1.18.0", "1.18", "1"]
-    from: "library/golang:1.18.0-bullseye"
+  # golang:1.18~1.99 
+  - tags: ["{0}.{1}", "{0}"]
+    from: 'library/golang:/^1.(1[8-9]|[2-9][0-9]).(\d)$/'
