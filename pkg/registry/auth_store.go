@@ -2,15 +2,10 @@ package registry
 
 import (
 	"encoding/json"
-	"errors"
 	"fmt"
 	"io/ioutil"
 	"net/http"
 	"time"
-)
-
-var (
-	ErrUnauthorized = errors.New("unauthorized")
 )
 
 type Auth struct {

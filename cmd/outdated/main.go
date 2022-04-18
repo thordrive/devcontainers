@@ -77,7 +77,7 @@ func main() {
 
 			child_entry_date, err := get_date(child_entry.Ref)
 			if err != nil {
-				if !errors.Is(err, registry.ErrUnauthorized) {
+				if !(errors.Is(err, registry.ErrNotFound) || errors.Is(err, registry.ErrUnauthorized)) {
 					log.Fatalf("failed to get date for %s: %s", child_entry.Ref, err)
 				}
 

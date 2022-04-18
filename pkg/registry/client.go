@@ -75,6 +75,10 @@ func (c *Client) GetImageManifest(ref string) (*ImageManifest, error) {
 		return nil, fmt.Errorf("failed to read body: %w", err)
 	}
 
+	if res.StatusCode == http.StatusNotFound {
+		return nil, ErrNotFound
+	}
+
 	image_manifest := &ImageManifest{}
 	if err := json.Unmarshal(body, &image_manifest); err != nil {
 		return nil, fmt.Errorf("failed to parse image manifest: %w", err)
