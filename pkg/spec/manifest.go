@@ -73,19 +73,25 @@ func Walk(files []fs.FileInfo, fn Walker) error {
 
 		manifest_path := filepath.Join(context_path, ManifestFilename)
 
-		if _, err := os.Stat(manifest_path); errors.Is(err, os.ErrNotExist) {
-			continue
-		} else if err != nil {
-			return fmt.Errorf("failed to stat manifest at %s: %w", manifest_path, err)
-		}
+		if err := (func() error {
+			if _, err := os.Stat(manifest_path); errors.Is(err, os.ErrNotExist) {
+				return nil
+			} else if err != nil {
+				return fmt.Errorf("failed to stat manifest: %w", err)
+			}
 
-		var manifest Manifest
-		if err := ReadManifest(manifest_path, &manifest); err != nil {
-			return fmt.Errorf("failed to read manifest at %s: %w", manifest_path, err)
-		}
+			var manifest Manifest
+			if err := ReadManifest(manifest_path, &manifest); err != nil {
+				return fmt.Errorf("failed to read manifest: %w", err)
+			}
 
-		if err := fn(manifest_path, &manifest); err != nil {
-			return fmt.Errorf("failed to walk at %s: %w", manifest_path, err)
+			if err := fn(manifest_path, &manifest); err != nil {
+				return fmt.Errorf("failed to walk: %w", err)
+			}
+
+			return nil
+		})(); err != nil {
+			return fmt.Errorf("error at %s: %w", manifest_path, err)
 		}
 	}
 

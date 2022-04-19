@@ -84,7 +84,113 @@ func (bt *BuildTree) RootEntries() []*BuildTreeNode {
 	return rst
 }
 
-type BuildTreeResolveOption struct {
+func ExpandBySemver(image Image, name string, pattern *regexp.Regexp) ([]Image, error) {
+	remote_tags, err := registry.DefaultClient.GetTags(name)
+	if err != nil {
+		return nil, fmt.Errorf("failed to get tag from registry: %w", err)
+	}
+
+	expanded_images := []Image{}
+
+	// Expanding.
+	for _, remote_tag := range remote_tags {
+		match := pattern.FindStringSubmatch(remote_tag)
+		if len(match) == 0 {
+			continue
+		}
+
+		expanded_image := image
+		expanded_image.From = name + ":" + match[0]
+		expanded_image.Tags = append([]string{}, image.Tags...)
+		for i, template := range image.Tags {
+			var replace_err error = nil
+			expanded_image.Tags[i] = slotPattern.ReplaceAllStringFunc(template, func(slot string) string {
+				index, err := strconv.ParseUint(slot[1:len(slot)-1], 10, 64)
+				if err != nil {
+					replace_err = fmt.Errorf("failed to parse uint from %s: %w", template, err)
+					return ""
+				}
+
+				// `index` is 0 based and the submatch item is 1 based since `match[0]` is the matched string.
+				if index+1 >= uint64(len(match)) {
+					replace_err = errors.New("index out of range: " + template)
+					return ""
+				}
+
+				return match[index+1]
+			})
+
+			if replace_err != nil {
+				return nil, replace_err
+			}
+		}
+
+		expanded_images = append(expanded_images, expanded_image)
+	}
+
+	get_matched_ints := func(tag string) []uint64 {
+		match := pattern.FindStringSubmatch(tag)
+		if len(match) < 2 {
+			return []uint64{}
+		}
+
+		rst := make([]uint64, 0, len(match)-1)
+		for _, word := range match[1:] {
+			d, _ := strconv.ParseUint(word, 10, 64) // It will not fail we already checked that while expanding.
+			rst = append(rst, d)
+		}
+
+		return rst
+	}
+
+	// Merge duplicate tags.
+	for _, expanded_image_lhs := range expanded_images {
+		match_lhs := get_matched_ints(expanded_image_lhs.From[len(name)+1:])
+		for index_rhs, expanded_image_rhs := range expanded_images {
+			if expanded_image_lhs.From == expanded_image_rhs.From {
+				// Self
+				continue
+			}
+
+			match_rhs := get_matched_ints(expanded_image_rhs.From[len(name)+1:])
+
+			if len(match_lhs) != len(match_rhs) {
+				// Is this can be resolved?
+				return nil, errors.New("maybe alias is matched?")
+			}
+
+			take_lhs := false
+			for i := range match_lhs {
+				if match_lhs[i] == match_rhs[i] {
+					continue
+				}
+
+				take_lhs = match_lhs[i] > match_rhs[i]
+				break
+			}
+
+			if !take_lhs {
+				continue
+			}
+
+			for _, tag_lhs := range expanded_image_lhs.Tags {
+				index_new := 0
+				for _, tag_rhs := range expanded_image_rhs.Tags {
+					if tag_lhs == tag_rhs {
+						// Abandon duplicated one on the rhs.
+						continue
+					}
+
+					expanded_image_rhs.Tags[index_new] = tag_rhs
+					index_new++
+				}
+
+				expanded_images[index_rhs].Tags = expanded_image_rhs.Tags[:index_new]
+			}
+		}
+	}
+
+	return expanded_images, nil
 }
 
 func ResolveBuildTree(build_tree *BuildTree) Walker {
@@ -92,128 +198,38 @@ func ResolveBuildTree(build_tree *BuildTree) Walker {
 	entries := build_tree.Entries
 	return func(manifest_path string, manifest *Manifest) error {
 		for _, image := range manifest.Images {
-			var expanded_images []Image
+			expanded_images := []Image{image}
 
-			name, tag := func() (string, string) {
-				ref := strings.SplitN(image.From, ":", 2)
-				return ref[0], ref[1]
-			}()
+			if err := (func() error {
+				name, tag := func() (string, string) {
+					ref := strings.SplitN(image.From, ":", 2)
+					return ref[0], ref[1]
+				}()
 
-			if len(tag) == 0 {
-				return errors.New(`"from" must have a tag`)
-			}
-
-			if !(len(tag) > 2 && tag[0] == '/' && tag[len(tag)-1] == '/') {
-				expanded_images = []Image{image}
-			} else {
-				// Pattern matching.
-				pattern, err := regexp.Compile(tag[1 : len(tag)-2])
-				if err != nil {
-					return fmt.Errorf("failed to compile regex: %w", err)
+				if len(name) == 0 {
+					return errors.New(`"from" must have a name`)
 				}
 
-				remote_tags, err := registry.DefaultClient.GetTags(name)
-				if err != nil {
-					return fmt.Errorf("failed to get tag from registry: %w", err)
+				if len(tag) == 0 {
+					return errors.New(`"from" must have a tag`)
 				}
 
-				// Expanding.
-				for _, remote_tag := range remote_tags {
-					match := pattern.FindStringSubmatch(remote_tag)
-					if len(match) == 0 {
-						continue
+				if len(tag) > 2 && tag[0] == '/' && tag[len(tag)-1] == '/' {
+					// Pattern matching.
+					pattern, err := regexp.Compile(tag[1 : len(tag)-2])
+					if err != nil {
+						return fmt.Errorf("failed to compile regex: %w", err)
 					}
 
-					expanded_image := image
-					expanded_image.From = name + ":" + match[0]
-					expanded_image.Tags = append([]string{}, image.Tags...)
-					for i, template := range image.Tags {
-						var replace_err error
-						expanded_image.Tags[i] = slotPattern.ReplaceAllStringFunc(template, func(slot string) string {
-							index, err := strconv.ParseUint(slot[1:len(slot)-1], 10, 64)
-							if err != nil {
-								replace_err = fmt.Errorf("failed to parse uint from %s: %w", template, err)
-								return ""
-							}
-
-							// `index` is 0 based and the submatch item is 1 based since `match[0]` is the matched string.
-							if index+1 >= uint64(len(match)) {
-								replace_err = errors.New("index out of range: " + template)
-								return ""
-							}
-
-							return match[index+1]
-						})
-
-						if replace_err != nil {
-							return replace_err
-						}
-					}
-
-					expanded_images = append(expanded_images, expanded_image)
-				}
-
-				get_matched_ints := func(tag string) []uint64 {
-					match := pattern.FindStringSubmatch(tag)
-					if len(match) < 2 {
-						return []uint64{}
-					}
-
-					rst := make([]uint64, 0, len(match)-1)
-					for _, word := range match[1:] {
-						d, _ := strconv.ParseUint(word, 10, 64) // It will not fail we already checked that while expanding.
-						rst = append(rst, d)
-					}
-
-					return rst
-				}
-
-				// Merge duplicate tags.
-				for _, expanded_image_lhs := range expanded_images {
-					match_lhs := get_matched_ints(expanded_image_lhs.From[len(name)+1:])
-					for index_rhs, expanded_image_rhs := range expanded_images {
-						if expanded_image_lhs.From == expanded_image_rhs.From {
-							// Self
-							continue
-						}
-
-						match_rhs := get_matched_ints(expanded_image_rhs.From[len(name)+1:])
-
-						if len(match_lhs) != len(match_rhs) {
-							// Is this can be resolved?
-							return errors.New("maybe alias is matched?")
-						}
-
-						take_lhs := false
-						for i := range match_lhs {
-							if match_lhs[i] == match_rhs[i] {
-								continue
-							}
-
-							take_lhs = match_lhs[i] > match_rhs[i]
-							break
-						}
-
-						if !take_lhs {
-							continue
-						}
-
-						for _, tag_lhs := range expanded_image_lhs.Tags {
-							index_new := 0
-							for _, tag_rhs := range expanded_image_rhs.Tags {
-								if tag_lhs == tag_rhs {
-									// Abandon duplicated one on the rhs.
-									continue
-								}
-
-								expanded_image_rhs.Tags[index_new] = tag_rhs
-								index_new++
-							}
-
-							expanded_images[index_rhs].Tags = expanded_image_rhs.Tags[:index_new]
-						}
+					expanded_images, err = ExpandBySemver(image, name, pattern)
+					if err != nil {
+						return fmt.Errorf("failed to expand tag: %w", err)
 					}
 				}
+
+				return nil
+			})(); err != nil {
+				return fmt.Errorf("failed to parse image (from: %s): %w", image.From, err)
 			}
 
 			for _, img := range expanded_images {

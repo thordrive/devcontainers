@@ -94,8 +94,6 @@ func main() {
 		log.Fatalln("failed to find reference", args.Reference)
 	}
 
-	// fmt.Printf("build_ctx: %v\n", build_ctx)
-
 	cmd := &exec.Cmd{
 		Path:   docker_binary,
 		Stdout: os.Stdout,
