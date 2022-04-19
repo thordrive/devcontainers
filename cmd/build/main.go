@@ -68,18 +68,25 @@ func main() {
 
 	if err := spec.Walk(files, func(manifest_path string, manifest *spec.Manifest) error {
 		for _, image := range manifest.Images {
-			for _, ref := range manifest.RefsOf(image) {
-				if args.Reference != ref {
-					continue
-				}
+			expanded_images, err := spec.ExpandImage(image)
+			if err != nil {
+				return fmt.Errorf("failed to expand image (from: %s): %w", image.From, err)
+			}
 
-				build_ctx = BuildContext{
-					path:     filepath.Dir(manifest_path),
-					manifest: *manifest,
-					image:    image,
-				}
+			for _, expanded_image := range expanded_images {
+				for _, ref := range manifest.RefsOf(expanded_image) {
+					if args.Reference != ref {
+						continue
+					}
 
-				return io.EOF
+					build_ctx = BuildContext{
+						path:     filepath.Dir(manifest_path),
+						manifest: *manifest,
+						image:    expanded_image,
+					}
+
+					return io.EOF
+				}
 			}
 		}
 

@@ -84,7 +84,9 @@ func (bt *BuildTree) RootEntries() []*BuildTreeNode {
 	return rst
 }
 
-func ExpandBySemver(image Image, name string, pattern *regexp.Regexp) ([]Image, error) {
+func ExpandBySemver(image Image, pattern *regexp.Regexp) ([]Image, error) {
+	name := strings.SplitN(image.From, ":", 2)[0]
+
 	remote_tags, err := registry.DefaultClient.GetTags(name)
 	if err != nil {
 		return nil, fmt.Errorf("failed to get tag from registry: %w", err)
@@ -193,43 +195,40 @@ func ExpandBySemver(image Image, name string, pattern *regexp.Regexp) ([]Image, 
 	return expanded_images, nil
 }
 
+func ExpandImage(image Image) ([]Image, error) {
+	name, tag := func() (string, string) {
+		ref := strings.SplitN(image.From, ":", 2)
+		return ref[0], ref[1]
+	}()
+
+	if len(name) == 0 {
+		return nil, errors.New(`"from" must have a name`)
+	}
+
+	if len(tag) == 0 {
+		return nil, errors.New(`"from" must have a tag`)
+	}
+
+	if !((len(tag) > 2) && (tag[0] == '/') && (tag[len(tag)-1] == '/')) {
+		return []Image{image}, nil
+	}
+
+	pattern, err := regexp.Compile(tag[1 : len(tag)-2])
+	if err != nil {
+		return nil, fmt.Errorf("failed to compile regex: %w", err)
+	}
+
+	return ExpandBySemver(image, pattern)
+}
+
 func ResolveBuildTree(build_tree *BuildTree) Walker {
 	build_tree.Entries = make(map[string]*BuildTreeNode)
 	entries := build_tree.Entries
 	return func(manifest_path string, manifest *Manifest) error {
 		for _, image := range manifest.Images {
-			expanded_images := []Image{image}
-
-			if err := (func() error {
-				name, tag := func() (string, string) {
-					ref := strings.SplitN(image.From, ":", 2)
-					return ref[0], ref[1]
-				}()
-
-				if len(name) == 0 {
-					return errors.New(`"from" must have a name`)
-				}
-
-				if len(tag) == 0 {
-					return errors.New(`"from" must have a tag`)
-				}
-
-				if len(tag) > 2 && tag[0] == '/' && tag[len(tag)-1] == '/' {
-					// Pattern matching.
-					pattern, err := regexp.Compile(tag[1 : len(tag)-2])
-					if err != nil {
-						return fmt.Errorf("failed to compile regex: %w", err)
-					}
-
-					expanded_images, err = ExpandBySemver(image, name, pattern)
-					if err != nil {
-						return fmt.Errorf("failed to expand tag: %w", err)
-					}
-				}
-
-				return nil
-			})(); err != nil {
-				return fmt.Errorf("failed to parse image (from: %s): %w", image.From, err)
+			expanded_images, err := ExpandImage(image)
+			if err != nil {
+				return fmt.Errorf("failed to expand image (from: %s): %w", image.From, err)
 			}
 
 			for _, img := range expanded_images {
