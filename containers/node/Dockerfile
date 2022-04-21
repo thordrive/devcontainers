@@ -46,8 +46,6 @@ RUN apt-get update \
         init-system-helpers \
 		bash-completion \
 		zsh \
-		python3 \
-		pip \
 	&& apt-get clean --yes \
 	&& rm -rf /var/lib/apt/lists/* \
 	&& echo "en_US.UTF-8 UTF-8" >> /etc/locale.gen \
