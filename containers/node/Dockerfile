@@ -21,6 +21,7 @@ RUN apt-get update \
         unzip \
         zip \
 		git \
+        git-lgs \
         nano \
         vim-tiny \
         less \

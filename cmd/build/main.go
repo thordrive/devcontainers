@@ -103,13 +103,14 @@ func main() {
 
 	cmd := &exec.Cmd{
 		Path:   docker_binary,
+		Dir:    build_ctx.path,
 		Stdout: os.Stdout,
 		Stderr: os.Stderr,
 	}
 
 	cmd.Args = func() []string {
 		args := []string{cmd.Path, "build"}
-		args = append(args, "--file", build_ctx.manifest.Dockerfile)
+		args = append(args, "--file", build_ctx.image.Dockerfile)
 
 		for _, tag := range build_ctx.image.Tags {
 			args = append(args, "--tag", fmt.Sprintf("%s:%s", build_ctx.manifest.Name, tag))

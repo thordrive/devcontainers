@@ -42,6 +42,15 @@ func ReadManifest(manifest_path string, manifest *Manifest) error {
 		manifest.Dockerfile = filepath.Join(filepath.Dir(manifest_path), "Dockerfile")
 	}
 
+	for i := range manifest.Images {
+		image := &manifest.Images[i]
+		if len(image.Dockerfile) == 0 {
+			image.Dockerfile = manifest.Dockerfile
+		} else {
+			image.Dockerfile = filepath.Join(filepath.Dir(manifest_path), image.Dockerfile)
+		}
+	}
+
 	return nil
 }
 
