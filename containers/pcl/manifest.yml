@@ -3,11 +3,4 @@ name: thordrive/dev-pcl
 images:
   - tags: ["1.11.1", "1.11"]
     from: "thordrive/dev-gcc:12"
-    dockerfile: "11.Dockerfile"
-    args:
-      "VCPKG_COMMIT": "e7e328cf9d3ce28cfd407fe4e052bb9e7f5c87a6"
-
-  - tags: ["1.12", "1.12.0"]
-    from: "thordrive/dev-gcc:12"
-    args:
-      "VCPKG_COMMIT": "93b38546e271ac8047a6dd00469f14845beb4642"
+    dockerfile: "1.11.1.Dockerfile"

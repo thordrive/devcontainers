@@ -21,9 +21,9 @@ RUN apt-get update \
         unzip \
         zip \
 		git \
-        git-lgs \
+        git-lfs \
         nano \
-        vim-tiny \
+        vim \
         less \
         jq \
         lsb-release \

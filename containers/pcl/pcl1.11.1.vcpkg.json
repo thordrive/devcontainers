@@ -1,0 +1,31 @@
+{
+	"name": "project",
+	"version-semver": "1.0.0",
+	"dependencies": [
+		{
+			"name": "pcl",
+			"features": [
+				"vtk"
+			]
+		}
+	],
+	"builtin-baseline": "af2287382b1991dbdcb7e5112d236f3323b9dd7a",
+	"overrides": [
+		{
+			"name": "pcl",
+			"version": "1.11.1#5"
+		},
+		{
+			"name": "vtk",
+			"version": "8.2.0-13"
+		},
+		{
+			"name": "proj4",
+			"version": "6.3.1#3"
+		},
+		{
+			"name": "freetype",
+			"version": "2.10.1-6"
+		}
+	]
+}

@@ -23,7 +23,7 @@ RUN apt-get update \
 		git \
         git-lfs \
         nano \
-        vim-tiny \
+        vim \
         less \
         jq \
         lsb-release \

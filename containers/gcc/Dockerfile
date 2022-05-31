@@ -23,7 +23,7 @@ RUN apt-get update \
 		git \
 		git-lfs \
         nano \
-        vim-tiny \
+        vim \
         less \
         jq \
         lsb-release \
@@ -100,13 +100,11 @@ RUN TMP_DIR=$(mktemp -d -t cmake-${CMAKE_VERSION}-XXXX) \
 
 
 # Install vcpkg
-ARG VCPKG_COMMIT
 ENV VCPKG_ROOT=/opt/vcpkg \
     VCPKG_DOWNLOADS=/opt/vcpkg-downloads
 RUN mkdir -p "${VCPKG_ROOT}" "${VCPKG_DOWNLOADS}" \
 	&& git clone https://github.com/microsoft/vcpkg "${VCPKG_ROOT}" \
 	&& cd "${VCPKG_ROOT}" \
-	&& git checkout "${VCPKG_COMMIT}" \
 	&& ./bootstrap-vcpkg.sh -disableMetrics \
 	&& chown -R "${USER_UID}:${USER_GID}" "${VCPKG_ROOT}" "${VCPKG_DOWNLOADS}" \
 	&& ln -s /opt/vcpkg/vcpkg /usr/local/bin/vcpkg \
