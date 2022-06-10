@@ -1,0 +1,6 @@
+name: thordrive/dev-python
+
+images:
+  # python:3.10~3.99
+  - tags: ["3.{0}"]
+    from: 'library/python:/^3\.([1-9][0-9])$/'

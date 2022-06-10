@@ -5,46 +5,46 @@ FROM ${FROM:-gcc:${TAG}}
 RUN apt-get update \
 	&& apt-get install --yes --no-install-recommends \
 		apt-utils \
-        openssh-client \
-        gnupg2 \
-        dirmngr \
-        iproute2 \
-        procps \
-        lsof \
-        htop \
-        net-tools \
-        psmisc \
-        curl \
-        wget \
-        rsync \
-        ca-certificates \
-        unzip \
-        zip \
+		openssh-client \
+		gnupg2 \
+		dirmngr \
+		iproute2 \
+		procps \
+		lsof \
+		htop \
+		net-tools \
+		psmisc \
+		curl \
+		wget \
+		rsync \
+		ca-certificates \
+		unzip \
+		zip \
 		git \
 		git-lfs \
-        nano \
-        vim \
-        less \
-        jq \
-        lsb-release \
-        apt-transport-https \
-        dialog \
-        libc6 \
-        libgcc1 \
-        libkrb5-3 \
-        libgssapi-krb5-2 \
-        libicu[0-9][0-9] \
-        liblttng-ust0 \
-        libstdc++6 \
-        zlib1g \
-        locales \
-        sudo \
-        ncdu \
-        man-db \
-        strace \
-        manpages \
-        manpages-dev \
-        init-system-helpers \
+		nano \
+		vim \
+		less \
+		jq \
+		lsb-release \
+		apt-transport-https \
+		dialog \
+		libc6 \
+		libgcc1 \
+		libkrb5-3 \
+		libgssapi-krb5-2 \
+		libicu[0-9][0-9] \
+		liblttng-ust0 \
+		libstdc++6 \
+		zlib1g \
+		locales \
+		sudo \
+		ncdu \
+		man-db \
+		strace \
+		manpages \
+		manpages-dev \
+		init-system-helpers \
 		bash-completion \
 		zsh \
 		python3 \
@@ -53,6 +53,8 @@ RUN apt-get update \
 	&& rm -rf /var/lib/apt/lists/* \
 	&& echo "en_US.UTF-8 UTF-8" >> /etc/locale.gen \
 	&& locale-gen
+
+
 
 ARG USERNAME=thor
 ARG USER_UID=${UID:-1000}
@@ -101,7 +103,7 @@ RUN TMP_DIR=$(mktemp -d -t cmake-${CMAKE_VERSION}-XXXX) \
 
 # Install vcpkg
 ENV VCPKG_ROOT=/opt/vcpkg \
-    VCPKG_DOWNLOADS=/opt/vcpkg-downloads
+	VCPKG_DOWNLOADS=/opt/vcpkg-downloads
 RUN mkdir -p "${VCPKG_ROOT}" "${VCPKG_DOWNLOADS}" \
 	&& git clone https://github.com/microsoft/vcpkg "${VCPKG_ROOT}" \
 	&& cd "${VCPKG_ROOT}" \

@@ -5,46 +5,46 @@ FROM ${FROM:-node:${TAG}}
 RUN apt-get update \
 	&& apt-get install --yes --no-install-recommends \
 		apt-utils \
-        openssh-client \
-        gnupg2 \
-        dirmngr \
-        iproute2 \
-        procps \
-        lsof \
-        htop \
-        net-tools \
-        psmisc \
-        curl \
-        wget \
-        rsync \
-        ca-certificates \
-        unzip \
-        zip \
+		openssh-client \
+		gnupg2 \
+		dirmngr \
+		iproute2 \
+		procps \
+		lsof \
+		htop \
+		net-tools \
+		psmisc \
+		curl \
+		wget \
+		rsync \
+		ca-certificates \
+		unzip \
+		zip \
 		git \
-        git-lfs \
-        nano \
-        vim \
-        less \
-        jq \
-        lsb-release \
-        apt-transport-https \
-        dialog \
-        libc6 \
-        libgcc1 \
-        libkrb5-3 \
-        libgssapi-krb5-2 \
-        libicu[0-9][0-9] \
-        liblttng-ust0 \
-        libstdc++6 \
-        zlib1g \
-        locales \
-        sudo \
-        ncdu \
-        man-db \
-        strace \
-        manpages \
-        manpages-dev \
-        init-system-helpers \
+		git-lfs \
+		nano \
+		vim \
+		less \
+		jq \
+		lsb-release \
+		apt-transport-https \
+		dialog \
+		libc6 \
+		libgcc1 \
+		libkrb5-3 \
+		libgssapi-krb5-2 \
+		libicu[0-9][0-9] \
+		liblttng-ust0 \
+		libstdc++6 \
+		zlib1g \
+		locales \
+		sudo \
+		ncdu \
+		man-db \
+		strace \
+		manpages \
+		manpages-dev \
+		init-system-helpers \
 		bash-completion \
 		zsh \
 	&& apt-get clean --yes \

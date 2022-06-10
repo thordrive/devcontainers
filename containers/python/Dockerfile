@@ -1,9 +1,9 @@
 ARG TAG
 ARG FROM
-FROM ${FROM:-golang:${TAG}}
+FROM ${FROM:-python:${TAG}}
 
 RUN apt-get update \
-	&& apt-get install --no-install-recommends --yes \
+	&& apt-get install --yes --no-install-recommends \
 		apt-utils \
 		openssh-client \
 		gnupg2 \
@@ -47,12 +47,12 @@ RUN apt-get update \
 		init-system-helpers \
 		bash-completion \
 		zsh \
-		python3 \
-		pip \
 	&& apt-get clean --yes \
 	&& rm -rf /var/lib/apt/lists/* \
 	&& echo "en_US.UTF-8 UTF-8" >> /etc/locale.gen \
 	&& locale-gen
+
+
 
 ARG USERNAME=thor
 ARG USER_UID=${UID:-1000}
