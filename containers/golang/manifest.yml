@@ -2,5 +2,5 @@ name: thordrive/dev-golang
   
 images:
   # golang:1.18~1.99 
-  - tags: ["{0}.{1}", "{0}"]
+  - tags: ["1.{0}.{1}", "1.{0}"]
     from: 'library/golang:/^1.(1[8-9]|[2-9][0-9]).(\d)$/'
